@@ -7,16 +7,17 @@ layout (std140) uniform matrices {
     mat4 model;                    
     mat4 view;
     mat4 projection;
+    vec3 vsLightPos;
     
 };
 
 out VS_OUT {
+
     mat4 projection;
     vec3 fragPos;
     vec3 lightPos;
-} vs_out;
 
-uniform vec3 vsLightPos;
+} vs_out;
 
 void main() {
 
