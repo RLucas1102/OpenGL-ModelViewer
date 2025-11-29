@@ -1,10 +1,10 @@
 src := ./src
 inc := ./include
-imgui := ./source/imgui
+imgui := ./imgui
 obj := ./obj
 bin := ./bin
-libGLFW := /home/robenoltl2/CSCI471/pckgs/glfw-3.4/build/src/libglfw3.a # I am doing static linking
-libASSIMP := /home/robenoltl2/CSCI471/pckgs/assimp/bin/pckgs/assimp/bin
+libGLFW := ./pckgs/libglfw3.a
+libASSIMP := ./pckgs/assimp/bin
 program := $(bin)/renderer.out
 
 CPP_SOURCES := $(wildcard $(src)/*.cpp)
