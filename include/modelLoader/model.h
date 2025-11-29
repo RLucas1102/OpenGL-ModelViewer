@@ -49,6 +49,16 @@ class Model {
                 vector.y = mesh->mVertices[i].y;
                 vector.z = mesh->mVertices[i].z;
                 vertex.position = vector;
+
+                // normals
+                if (mesh->HasNormals())
+                {
+                    vector.x = mesh->mNormals[i].x;
+                    vector.y = mesh->mNormals[i].y;
+                    vector.z = mesh->mNormals[i].z;
+                    vertex.normal = vector;
+                }
+
                 vertices.push_back(vertex);
 
             }

@@ -10,6 +10,7 @@
 struct Vertex
 {
     glm::vec3 position;
+    glm::vec3 normal;
 };
 
 
@@ -50,6 +51,10 @@ class Mesh {
             // Offset: offsetof() should return 0
             glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
             glEnableVertexAttribArray(0); // Enable position attribute at position 0
+
+            // Normal Attribute
+            glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
+            glEnableVertexAttribArray(1); // Enable normal attribute at position 1
 
             // Unbind current VAO
             glBindVertexArray(0);
