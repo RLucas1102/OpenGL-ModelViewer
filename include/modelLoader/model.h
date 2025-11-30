@@ -11,7 +11,14 @@
 
 class Model {
     private:
+
+        // Vertex data
         std::vector<Mesh> _meshes;
+        
+        // Material Properties
+        glm::vec3 _diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
+        glm::vec3 _specular = glm::vec3(0.5f, 0.5f, 0.5f);
+        float _shininess = 32.0f;
 
         void loadModel(std::string path) {
             Assimp::Importer importer;
@@ -24,6 +31,7 @@ class Model {
             processNode(scene->mRootNode, scene);
 
         }
+
         void processNode(aiNode* node, const aiScene* scene) {
 
             for (int i = 0; i < node->mNumMeshes; i++) {
@@ -38,6 +46,7 @@ class Model {
         }
 
         Mesh processMesh(aiMesh* mesh, const aiScene* scene) {
+
             std::vector<Vertex> vertices;
             std::vector<unsigned int> indices;
 
@@ -75,39 +84,30 @@ class Model {
         }
 
     public:
-        Model(const char* path) {
 
-            loadModel(path);
-
-        }
+        Model(const char* path) { loadModel(path); }
 
         void Draw() {
+
             for (int i = 0; i < _meshes.size(); i++) {
                 _meshes[i].draw();
             } 
         }
 
-        void InstancedDraw(int numObjects) {
-            for (int i = 0; i < _meshes.size(); i++) {
-                _meshes[i].drawInstanced(numObjects);
-            }
-            
+        void SetMaterials() {
+
+            glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_diffuse)); 
+            glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_specular)); 
+            glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(float), &_shininess); 
+
         }
 
-        void SetInstancedDraw(int numObjects, const glm::mat4* modelMatrices) {
-            for (int i = 0; i < _meshes.size(); i++) {
-                _meshes[i].setInstancedDraw(numObjects, modelMatrices);
-            }
-            
-        }
+        void ChangeDiffuse(const glm::vec3& inColor) { _diffuse = inColor; }
 
-        void SetInstanceColors(int numObjects, const glm::vec3* colors) {
-            for (int i = 0; i < _meshes.size(); i++) {
-                _meshes[i].setInstanceColors(numObjects, colors);
-            }
-            
-        }
+        void ChangeSpecular(const glm::vec3& inColor) { _specular = inColor; }
 
+        void ChangeShine(const float inShine) { _shininess = inShine; }
+        
 
 };
 
