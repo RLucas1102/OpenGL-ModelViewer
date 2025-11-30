@@ -4,6 +4,7 @@
 #include <iostream>
 #include <string>
 #include <sstream>
+#include <vector>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -39,16 +40,6 @@ glm::vec3 tempDirDiff;
 glm::vec3 tempDirSpec;
 
 bool shiftDown = false;
-
-// Material Properties
-glm::vec3 diffuse = glm::vec3(0.0f, 0.5f, 1.0f);
-glm::vec3 specular = glm::vec3(0.5f, 0.5f, 0.5f);
-float shininess = 32.0f;
-
-glm::vec3 tempDiff;
-glm::vec3 tempSpec;
-
-bool canChangeSpec = false;
 
 int main() {
 
@@ -96,9 +87,20 @@ int main() {
     Shader cubeLightShader("shaders/simpleShader/shader.vs", "shaders/simpleShader/shaderLight.fs");
 
     // Create model
+    std::vector<Model> sceneObjects;
+
     Model cube("./models/cube.obj");
     Model alien("./models/alien.obj");
     Model cubeLight("./models/cube.obj");
+
+    alien.ChangeDiffuse(glm::vec3(1.0f, 0.0f, 0.0f));
+    cube.ChangeDiffuse(glm::vec3(0.0f, 0.0f, 1.0f));
+
+    alien.ChangeShine(128.0f);
+    cube.ChangeShine(8.0f);
+
+    sceneObjects.push_back(cube);
+    sceneObjects.push_back(alien);
     
     // Create buffer and generate ID
     unsigned int vpUBO, lightUBO, materialUBO, dirLightUBO;       
@@ -197,13 +199,6 @@ int main() {
         glBufferSubData(GL_UNIFORM_BUFFER, 3 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(dirLightSpc));
         glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
-        // Load material properties
-        glBindBuffer(GL_UNIFORM_BUFFER, materialUBO);
-        glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(diffuse)); 
-        glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(specular)); 
-        glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(float), &shininess); 
-        glBindBuffer(GL_UNIFORM_BUFFER, 0);
-
         // Light
         cubeLightShader.use();
         
@@ -223,16 +218,25 @@ int main() {
 
         cubeLight.Draw();
 
-        // Object
+        // Scene
         simpleShader.use();
         
-        glm::mat4 model = glm::mat4(1.0f);
-        model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.0f, 1.0f, 0.0f));
-        unsigned int modelLoc = glGetUniformLocation(simpleShader.ID, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-        
-        alien.Draw();
+        for (int i = 0; i < sceneObjects.size(); i++) {
+            
+            // Load material properties
+            glBindBuffer(GL_UNIFORM_BUFFER, materialUBO);
+            sceneObjects.at(i).SetMaterials();
+            glBindBuffer(GL_UNIFORM_BUFFER, 0);
+            
+            glm::mat4 model = glm::mat4(1.0f);
+            model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(cos(i), sin(i), 0.0f));
+            unsigned int modelLoc = glGetUniformLocation(simpleShader.ID, "model");
+            glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 
+            sceneObjects.at(i).Draw();
+        
+        }
+    
         glfwSwapBuffers(window); // Swap front and back buffer
 
     }
@@ -264,56 +268,6 @@ void key_callback(GLFWwindow *MyWindow, int key, int scancode, int action, int m
 {
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(MyWindow, true);
-    }
-    else if (key == GLFW_KEY_D) {
-        if (action == GLFW_PRESS) {
-            tempDiff = diffuse;
-            tempDirDiff = dirLightDif;
-            tempPDiff = plightDiffuse;
-
-            diffuse = glm::vec3(0.0f);
-            dirLightDif = glm::vec3(0.0f);
-            plightDiffuse = glm::vec3(0.0f);
-        }
-        else if(action == GLFW_RELEASE) {
-            diffuse = tempDiff;
-            dirLightDif = tempDirDiff;
-            plightDiffuse = tempPDiff;
-        }
-    }
-    else if (key == GLFW_KEY_S) {
-        if (action == GLFW_PRESS) {
-            tempSpec = specular;
-            tempDirSpec = dirLightSpc;
-            tempPSpec = plightSpecular;
-
-            specular = glm::vec3(0.0f);
-            dirLightSpc = glm::vec3(0.0f);
-            plightSpecular = glm::vec3(0.0f);
-        }
-        else if(action == GLFW_RELEASE) {
-            specular = tempSpec;
-            dirLightSpc = tempDirSpec;
-            plightSpecular = tempPSpec;
-        }
-    }
-    else if (key == GLFW_KEY_Z) {
-        if (action == GLFW_PRESS) {
-            canChangeSpec = true;
-        }
-        else if (action == GLFW_RELEASE) {
-            canChangeSpec = false;
-        }
-    }
-    else if (key == GLFW_KEY_EQUAL) {
-        if (canChangeSpec) {
-            shininess *= 2.0f;
-        }
-    }
-    else if (key == GLFW_KEY_MINUS) {
-        if (canChangeSpec) {
-            shininess *= 0.5f;
-        }
     }
     else if (key == GLFW_KEY_LEFT) {
         lightPos += glm::vec3(0.1f, 0.0f, 0.0f);
