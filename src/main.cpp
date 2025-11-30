@@ -13,6 +13,10 @@
 #include <ShaderLoader.h>
 #include <modelLoader/model.h>
 
+#include <imgui/imgui.h>
+#include <imgui/imgui_impl_glfw.h>
+#include <imgui/imgui_impl_opengl3.h>
+
 // Callbacks
 void error_callback(int error, const char* description);
 static void key_callback(GLFWwindow* MyWindow, int key, int scancode, int action, int mods); // Make local to this file
@@ -28,16 +32,10 @@ float constant = 1.0f;
 float linear = 0.7f;
 float quadratic = 1.8f;
 
-glm::vec3 tempPDiff;
-glm::vec3 tempPSpec;
-
 glm::vec3 dirLightDir = glm::vec3(0.0f, -1.0f, -1.0f);
 glm::vec3 dirLightAmb = glm::vec3(0.1f, 0.1f, 0.1f);
 glm::vec3 dirLightDif = glm::vec3(1.0f, 1.0f, 1.0f);
 glm::vec3 dirLightSpc = glm::vec3(1.0f, 1.0f, 1.0f);
-
-glm::vec3 tempDirDiff;
-glm::vec3 tempDirSpec;
 
 bool shiftDown = false;
 
@@ -82,22 +80,30 @@ int main() {
         return 1;
     }
 
+    // GUI Setup
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+    ImGui_ImplOpenGL3_Init("#version 330");
+
     // Create Shader Programs
     Shader simpleShader("shaders/simpleShader/shader.vs", "shaders/simpleShader/shader.fs");
     Shader cubeLightShader("shaders/simpleShader/shader.vs", "shaders/simpleShader/shaderLight.fs");
 
     // Create model
-    std::vector<Model> sceneObjects;
+    std::vector<Model*> sceneObjects;
 
-    Model cube("./models/cube.obj");
-    Model alien("./models/alien.obj");
+    Model* cube = new Model("./models/cube.obj");
+    Model* alien = new Model("./models/alien.obj");
     Model cubeLight("./models/cube.obj");
 
-    alien.ChangeDiffuse(glm::vec3(1.0f, 0.0f, 0.0f));
-    cube.ChangeDiffuse(glm::vec3(0.0f, 0.0f, 1.0f));
+    alien->ChangeDiffuse(glm::vec3(1.0f, 0.0f, 0.0f));
+    cube->ChangeDiffuse(glm::vec3(0.0f, 0.0f, 1.0f));
 
-    alien.ChangeShine(128.0f);
-    cube.ChangeShine(8.0f);
+    alien->ChangeShine(128.0f);
+    cube->ChangeShine(8.0f);
 
     sceneObjects.push_back(cube);
     sceneObjects.push_back(alien);
@@ -166,6 +172,25 @@ int main() {
         glClearColor(windowColor.x, windowColor.y, windowColor.z, 1.0f); // Set color to clear window with
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // Clear screen with color
         
+        // GUI Start Frame
+        ImGui_ImplOpenGL3_NewFrame();
+        ImGui_ImplGlfw_NewFrame();
+        ImGui::NewFrame();
+
+        // GUI Widgets
+        ImGui::Begin("My name is window, ImGUI Window");
+        ImGui::Text("Hello there adventurer!");
+        
+        float color[3];
+        if(ImGui::ColorEdit3("Object Color", color)) {
+
+            glm::vec3 colorIn = glm::vec3(color[0], color[1], color[2]);
+
+            cube->ChangeDiffuse(colorIn);
+        }
+
+        ImGui::End();
+
         // Camera
         glm::vec3 viewPos = glm::vec3(0, 0, -4);
 
@@ -225,7 +250,7 @@ int main() {
             
             // Load material properties
             glBindBuffer(GL_UNIFORM_BUFFER, materialUBO);
-            sceneObjects.at(i).SetMaterials();
+            sceneObjects.at(i)->SetMaterials();
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
             
             glm::mat4 model = glm::mat4(1.0f);
@@ -233,17 +258,26 @@ int main() {
             unsigned int modelLoc = glGetUniformLocation(simpleShader.ID, "model");
             glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 
-            sceneObjects.at(i).Draw();
+            sceneObjects.at(i)->Draw();
         
         }
+
+        ImGui::Render();
+        ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
         glfwSwapBuffers(window); // Swap front and back buffer
 
     }
+
+    ImGui_ImplGlfw_Shutdown();
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui::DestroyContext();
     
     // Clean up and shut down
     glDeleteBuffers(1, &vpUBO);
     glDeleteBuffers(1, &lightUBO);
+    glDeleteBuffers(1, &dirLightUBO);
+    glDeleteBuffers(1, &materialUBO);
     glfwTerminate(); // Release all GLFW resources and close windows
 
     return 0;
