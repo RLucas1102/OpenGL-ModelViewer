@@ -10,8 +10,8 @@ program := $(bin)/renderer.out
 CPP_SOURCES := $(wildcard $(src)/*.cpp)
 CPP_OBJECTS := $(CPP_SOURCES:$(src)/%.cpp=$(obj)/%.o)
 
-GUI_SOURCES := #$(wildcard $(imgui)/*.cpp)
-GUI_OBJECTS := #$(GUI_SOURCES:$(imgui)/%.cpp=$(obj)/%.o)
+GUI_SOURCES := $(wildcard $(imgui)/*.cpp)
+GUI_OBJECTS := $(GUI_SOURCES:$(imgui)/%.cpp=$(obj)/%.o)
 
 C_SOURCES := $(wildcard $(src)/*.c)
 C_OBJECTS := $(C_SOURCES:$(src)/%.c=$(obj)/%.o)
