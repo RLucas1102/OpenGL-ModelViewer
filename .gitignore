@@ -7,3 +7,6 @@
 
 # binFiles
 /bin
+
+# GUI Property Saves
+imgui.ini
