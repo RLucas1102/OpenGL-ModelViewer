@@ -76,10 +76,13 @@ int main() {
     myScene->SetupUniforms();
 
     // Object setup
-    myScene->SetObject("models/cube.obj");
+    float color[] = {0.5f, 0.5f, 0.5f};
+    float* shininess = new float(32.0f);
+
+    myScene->SetObject("models/alien.obj");
     myScene->SetObjectColor(glm::vec3(0.5f, 0.5f, 0.5f));
     myScene->SetObjectSpec(glm::vec3(0.5f, 0.5f, 0.5f));
-    myScene->SetObjectShine(128.0f);
+    myScene->SetObjectShine(shininess);
 
     // Camera Setup
     glm::vec3 viewPos = glm::vec3(0, 0, -4);
@@ -140,8 +143,15 @@ int main() {
         ImGui::NewFrame();
 
         // GUI Widgets
-        ImGui::Begin("My name is window, ImGUI Window");
-        ImGui::Text("Hello there adventurer!");
+        ImGui::Begin("Scene Properties");
+        
+        ImGui::ColorEdit3("Object Color", color);
+        glm::vec3 colorVec = glm::vec3(color[0], color[1], color[2]);
+        myScene->SetObjectColor(colorVec);
+
+        ImGui::SliderFloat("Shininess", shininess, 2.0f, 256.0f);
+        myScene->SetObjectShine(shininess);
+
         ImGui::End();
 
         myScene->Render();
