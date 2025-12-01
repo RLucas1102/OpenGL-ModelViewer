@@ -15,11 +15,6 @@ class Model {
         // Vertex data
         std::vector<Mesh> _meshes;
         
-        // Material Properties
-        glm::vec3 _diffuse = glm::vec3(0.5f, 0.5f, 0.5f);
-        glm::vec3 _specular = glm::vec3(0.5f, 0.5f, 0.5f);
-        float _shininess = 32.0f;
-
         void loadModel(std::string path) {
             Assimp::Importer importer;
             const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate);
@@ -93,21 +88,6 @@ class Model {
                 _meshes[i].draw();
             } 
         }
-
-        void SetMaterials() {
-
-            glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_diffuse)); 
-            glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_specular)); 
-            glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(float), &_shininess); 
-
-        }
-
-        void ChangeDiffuse(const glm::vec3& inColor) { _diffuse = inColor; }
-
-        void ChangeSpecular(const glm::vec3& inColor) { _specular = inColor; }
-
-        void ChangeShine(const float inShine) { _shininess = inShine; }
-        
 
 };
 
