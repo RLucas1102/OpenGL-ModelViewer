@@ -150,7 +150,7 @@ class Scene
 
         void SetObjectSpec(const glm::vec3 specular) {_sMaterial->specular = specular; }
 
-        void SetObjectShine(float shininess) {_sMaterial->shininess = shininess; }
+        void SetObjectShine(float* shininess) {_sMaterial->shininess = *shininess; }
 
         void SetCameraPos(const glm::vec3& position) { 
             _sCamera->position = position;
