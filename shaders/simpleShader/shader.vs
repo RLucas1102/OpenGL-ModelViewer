@@ -7,10 +7,9 @@ layout (std140) uniform matrices {
                  
     mat4 view;
     mat4 projection;
+    mat4 model;
     
 };
-
-uniform mat4 model;
 
 out vec3 normal;
 out vec3 fragPos;
