@@ -74,7 +74,7 @@ class Scene
 
         };
 
-        void SetShader(const char* vShaderPath, const char* fShaderPath) { _sceneShader = new Shader(vShaderPath, fShaderPath); }
+        void SetShader(Shader* shaderIn) { _sceneShader = shaderIn; }
 
         void SetObject(const char* modelPath) { _sceneObject = new Model(modelPath); }
 
