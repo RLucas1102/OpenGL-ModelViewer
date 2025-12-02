@@ -12,6 +12,7 @@
 #include <imgui/imgui.h>
 #include <imgui/imgui_impl_glfw.h>
 #include <imgui/imgui_impl_opengl3.h>
+#include <imgui/imgui_filedialog.h>
 
 // Callbacks
 void error_callback(int error, const char* description);
@@ -67,11 +68,26 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 330");
 
+    bool fileDialogOpen;
+    ImFileDialogInfo fileDialogInfo;
+
+    // File filter
+    fileDialogInfo.fileFilterFunc = [](std::string filename) {
+        std::size_t found = filename.find(".obj");
+        return found != std::string::npos;
+    };
+
     // Scene Setup
     Scene* myScene = new Scene();
 
     // Shader setup
-    myScene->SetShader("shaders/simpleShader/shader.vs", "shaders/simpleShader/shader.fs");
+    Shader* lightShader     = new Shader("shaders/lightShader/shader.vs", "shaders/lightShader/shader.fs");
+    Shader* normalShader    = new Shader("shaders/normalShader/shader.vs", "shaders/normalShader/shader.fs");
+    Shader* shaders[] = { lightShader, normalShader};
+    const char* items[] = { "Lighting", "Normals" };
+    int item_current = 0;
+
+    myScene->SetShader(shaders[item_current]);
 
     myScene->SetupUniforms();
 
@@ -142,15 +158,36 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        ImGui::ShowDemoWindow();
+
         // GUI Widgets
         ImGui::Begin("Scene Properties");
-        
-        ImGui::ColorEdit3("Object Color", color);
-        glm::vec3 colorVec = glm::vec3(color[0], color[1], color[2]);
-        myScene->SetObjectColor(colorVec);
 
-        ImGui::SliderFloat("Shininess", shininess, 2.0f, 256.0f);
-        myScene->SetObjectShine(shininess);
+        if (ImGui::Button("Open Model")) {
+            fileDialogOpen = true;
+            fileDialogInfo.type = ImGuiFileDialogType_OpenFile;
+            fileDialogInfo.title = "Open Model";
+            fileDialogInfo.directoryPath = std::filesystem::current_path();
+        }
+
+        if (ImGui::FileDialog(&fileDialogOpen, &fileDialogInfo)) {
+            // Result path in: m_fileDialogInfo.resultPath
+            std::filesystem::path filePath = fileDialogInfo.resultPath;
+            myScene->SetObject(filePath.string().c_str());
+        }
+        
+        if(ImGui::ColorEdit3("Object Color", color)) {
+            glm::vec3 colorVec = glm::vec3(color[0], color[1], color[2]);
+            myScene->SetObjectColor(colorVec);
+        }
+        
+        if(ImGui::SliderFloat("Shininess", shininess, 2.0f, 256.0f)) {
+            myScene->SetObjectShine(shininess);
+        }
+
+        if(ImGui::Combo("Shaders", &item_current, items, IM_ARRAYSIZE(items))) {
+            myScene->SetShader(shaders[item_current]);
+        }
 
         ImGui::End();
 
