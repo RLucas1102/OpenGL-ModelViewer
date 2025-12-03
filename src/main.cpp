@@ -6,6 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 #include <Scene.h>
 
@@ -18,6 +19,18 @@
 void error_callback(int error, const char* description);
 static void key_callback(GLFWwindow* MyWindow, int key, int scancode, int action, int mods); // Make local to this file
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void handle_input();
+
+glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 focus = glm::vec3(0.0f, 0.0f, 0.0f);
+glm::mat4 view = glm::lookAt(position, focus, up);
+
+glm::vec3 rotationAxis;
+float angle = 1.0f;
+
+bool rotateX = false;
+bool rotateY = false;
 
 int main() {
 
@@ -38,7 +51,7 @@ int main() {
 
     // Create combined GLFW window and context object
     // Context creation is dependent on correctly installed drivers
-    GLFWwindow* window = glfwCreateWindow(800, 800, "CPSC6050: Shading and Texturing", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(1200, 1000, "CPSC6050: Ben Day Shader", NULL, NULL);
     if(!window) {
         glfwTerminate();
         std::cerr << "Could not create window" << std::endl;
@@ -52,13 +65,16 @@ int main() {
     glfwSetKeyCallback(window, key_callback); // ESCAPE to close window
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
     glfwSwapInterval(1); // Set swap interval to 1; by default it is 0 and will waste CPU and GPU time on fast machines
-
+    
     // Access to all OpenGL core and extension functions supported by both the context we created and the glad loader we generated.
     // Load OpenGL function pointers by retrieving function address and casting to GLADloadproc type (Used by GLAD to load functions)
     if(!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
         std::cerr << "Could not load GLAD" << std::endl;
         return 1;
     }
+
+    // Set Viewport
+    glViewport(0, 0, 1000, 1000);
 
     // GUI Setup
     IMGUI_CHECKVERSION();
@@ -101,10 +117,7 @@ int main() {
     myScene->SetObjectShine(shininess);
 
     // Camera Setup
-    glm::vec3 viewPos = glm::vec3(0, 0, -4);
-    float fov = 45.0f;
-
-    myScene->SetCameraPos(viewPos);
+    float fov = 60.0f;
     myScene->SetCameraProj(fov);
 
     // Light Setup
@@ -158,8 +171,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
-
         // GUI Widgets
         ImGui::Begin("Scene Properties");
 
@@ -191,12 +202,14 @@ int main() {
 
         ImGui::End();
 
+        myScene->SetCameraView(view);
         myScene->Render();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
         glfwSwapBuffers(window); // Swap front and back buffer
+        handle_input();
 
     }
 
@@ -230,6 +243,42 @@ void key_callback(GLFWwindow *MyWindow, int key, int scancode, int action, int m
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(MyWindow, true);
     }
+    else if(key == GLFW_KEY_RIGHT) {
+        if(action == GLFW_PRESS) {
+            rotateY = true;
+            rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
+        }
+        else if (action == GLFW_RELEASE) {
+            rotateY = false;
+        }
+    }
+    else if (key == GLFW_KEY_LEFT) {
+        if (action == GLFW_PRESS) {
+            rotateY = true;
+            rotationAxis = glm::vec3(0.0f, -1.0f, 0.0f);
+        }
+        else if (action == GLFW_RELEASE) {
+            rotateY = false;
+        }
+    }
+    else if (key == GLFW_KEY_UP) {
+        if (action == GLFW_PRESS) {
+            rotateX = true;
+            rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
+        }
+        else if (action == GLFW_RELEASE) {
+            rotateX = false;
+        }
+    }
+    else if (key == GLFW_KEY_DOWN) {
+        if (action == GLFW_PRESS) {
+            rotateX = true;
+            rotationAxis = glm::vec3(-1.0f, 0.0f, 0.0f);
+        }
+        else if (action == GLFW_RELEASE) {
+            rotateX = false;
+        }
+    }
 
 }
 
@@ -238,5 +287,16 @@ void key_callback(GLFWwindow *MyWindow, int key, int scancode, int action, int m
  */
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
-    glViewport(0, 0, 800, 800);
+    glViewport(0, 0, 1000, 1000);
+}
+
+void handle_input()
+{
+    if (rotateX) {
+        view = glm::rotate(view, glm::radians(1.0f), rotationAxis);
+    }
+    else if(rotateY) {
+        view = glm::rotate(view, glm::radians(1.0f), rotationAxis);
+    }
+
 }
