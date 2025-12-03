@@ -99,8 +99,9 @@ int main() {
     // Shader setup
     Shader* lightShader     = new Shader("shaders/lightShader/shader.vs", "shaders/lightShader/shader.fs");
     Shader* normalShader    = new Shader("shaders/normalShader/shader.vs", "shaders/normalShader/shader.fs");
-    Shader* shaders[] = { lightShader, normalShader};
-    const char* items[] = { "Lighting", "Normals" };
+    Shader* toonShader      = new Shader("shaders/toonShader/shader.vs", "shaders/toonShader/shader.fs");
+    Shader* shaders[] = { lightShader, normalShader, toonShader};
+    const char* items[] = { "Lighting", "Normals", "Toon" };
     int item_current = 0;
 
     myScene->SetShader(shaders[item_current]);
@@ -122,7 +123,7 @@ int main() {
 
     // Light Setup
     // Point light properties
-    glm::vec3 lightPos = glm::vec3(0, 0, -2);
+    glm::vec3 lightPos = glm::vec3(0, 0, -0.5);
     glm::vec3 plightAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
     glm::vec3 plightDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 plightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -137,7 +138,7 @@ int main() {
     myScene->SetPLightAttenuation(constant, linear, quadratic);
 
     // Directional light properties
-    glm::vec3 dirLightDir = glm::vec3(0.0f, -1.0f, -1.0f);
+    glm::vec3 dirLightDir = glm::vec3(0.0f, 0.0f, -1.0f);
     glm::vec3 dirLightAmb = glm::vec3(0.1f, 0.1f, 0.1f);
     glm::vec3 dirLightDif = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 dirLightSpc = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -198,6 +199,7 @@ int main() {
 
         if(ImGui::Combo("Shaders", &item_current, items, IM_ARRAYSIZE(items))) {
             myScene->SetShader(shaders[item_current]);
+            myScene->SetupUniforms();
         }
 
         ImGui::End();
