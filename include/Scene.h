@@ -15,6 +15,7 @@ struct ObjectMaterial {
     glm::vec3 diffuse;
     glm::vec3 specular;
     float shininess;
+    int toonLevels;
 
 };
 
@@ -108,7 +109,7 @@ class Scene
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _materialUBO);
-            glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + 1 * sizeof(float), NULL, GL_STATIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 1 * sizeof(int), NULL, GL_STATIC_DRAW);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _dirLightUBO);
             glBufferData(GL_UNIFORM_BUFFER, 4 * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
@@ -117,7 +118,7 @@ class Scene
             // Bind all of the uniform buffer objects to binding points
             glBindBufferRange(GL_UNIFORM_BUFFER, 0, _mvpUBO,         0, 3 * sizeof(glm::mat4));
             glBindBufferRange(GL_UNIFORM_BUFFER, 1, _pointLightUBO,  0, 4 * sizeof(glm::vec4) + 3 * sizeof(float));
-            glBindBufferRange(GL_UNIFORM_BUFFER, 2, _materialUBO,    0, 2 * sizeof(glm::vec4) + 1 * sizeof(float));
+            glBindBufferRange(GL_UNIFORM_BUFFER, 2, _materialUBO,    0, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 1 * sizeof(int));
             glBindBufferRange(GL_UNIFORM_BUFFER, 3, _dirLightUBO,    0, 4 * sizeof(glm::vec4));
 
         }
@@ -151,6 +152,8 @@ class Scene
         void SetObjectSpec(const glm::vec3 specular) {_sMaterial->specular = specular; }
 
         void SetObjectShine(float* shininess) {_sMaterial->shininess = *shininess; }
+
+        void SetObjectToonLevels(int toonLevels) { _sMaterial->toonLevels = toonLevels; }
 
         void SetCameraPos(const glm::vec3& position) { 
             _sCamera->position = position;
@@ -199,6 +202,7 @@ class Scene
             glBufferSubData(GL_UNIFORM_BUFFER, 0 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_sMaterial->diffuse)); 
             glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_sMaterial->specular)); 
             glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(float), &_sMaterial->shininess); 
+            glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + sizeof(float), sizeof(int), &_sMaterial->toonLevels);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
 
