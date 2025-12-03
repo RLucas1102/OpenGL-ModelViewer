@@ -1,5 +1,12 @@
 #version 330 core
 
+layout (std140) uniform Material {
+    vec4 diffuseIn;
+    vec4 specularIn;
+    float shininessIn;
+    int toonLevels;
+};
+
 out vec4 fragColor;
 
 in vec3 normal;
@@ -16,24 +23,12 @@ void main() {
     vec3 color;
     vec3 norm = normalize(normal);
 
-    intensity = dot(vec3(0.0f, 0.0f, 1.0f), norm);
+    intensity = dot(vec3(0.0f, 1.0f, 1.0f), norm);
 
     vec3 st = fragPos;
-    st = tile(st, 10.0);
+    st = tile(st, 30.0);
 
-    if (intensity > 0.95) {
-        color = vec3(1.0f - circle(st, 0.001));
-    }
-    else if (intensity > 0.5) {
-        color = vec3(1.0f - circle(st, 0.3));
-    }
-    else if (intensity > 0.25) {
-        color = vec3(1.0f - circle(st, 0.6));
-    }
-    else {
-        color = vec3(1.0f - circle(st, 0.9));
-    }
-
+    color = vec3(1.0f - circle(st, min(max(1.0 - intensity, 0.1), 0.9)));
     fragColor = vec4(color, 1.0f);
 
 }
@@ -43,7 +38,7 @@ vec3 circle(vec3 _fragPos, float _radius) {
     float edge0 = 1.0 - _radius;
     float edge1 = 1.0 - _radius + _radius * 0.2;
     float value = 1.0 - dot(pos, pos) * 3.14;
-    return smoothstep(edge0 * vec3(1.0), edge1 * vec3(1.0), value * (1.0 - vec3(0.005,1.000,0.008)));
+    return smoothstep(edge0 * vec3(1.0), edge1 * vec3(1.0), value * (1.0 - vec3(diffuseIn)));
 }
 
 vec3 tile(vec3 _fragPos, float _zoom) {
