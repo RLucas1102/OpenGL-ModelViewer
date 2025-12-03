@@ -21,6 +21,7 @@ layout (std140) uniform Material {
     vec4 diffuseIn;
     vec4 specularIn;
     float shininessIn;
+    int toonLevels;
 };
 
 in vec3 normal;
@@ -32,8 +33,7 @@ out vec4 fragColor;
 vec3 CalcPLight();
 vec3 CalcDirLight();
 
-const int toonLevels = 8;
-const float toonScale = 1.0f / toonLevels;
+float toonScale = 1.0f / toonLevels;
 
 void main() {
 
