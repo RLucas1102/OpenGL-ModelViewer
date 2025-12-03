@@ -100,8 +100,9 @@ int main() {
     Shader* lightShader     = new Shader("shaders/lightShader/shader.vs", "shaders/lightShader/shader.fs");
     Shader* normalShader    = new Shader("shaders/normalShader/shader.vs", "shaders/normalShader/shader.fs");
     Shader* toonShader      = new Shader("shaders/toonShader/shader.vs", "shaders/toonShader/shader.fs");
-    Shader* shaders[] = { lightShader, normalShader, toonShader};
-    const char* items[] = { "Lighting", "Normals", "Toon" };
+    Shader* bendayShader    = new Shader("shaders/BenDayShader/shader.vs", "shaders/BenDayShader/shader.fs");
+    Shader* shaders[] = { lightShader, normalShader, toonShader, bendayShader};
+    const char* items[] = { "Lighting", "Normals", "Toon", "Ben day" };
     int item_current = 0;
 
     myScene->SetShader(shaders[item_current]);
@@ -175,8 +176,6 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
-
-        ImGui::ShowDemoWindow();
 
         // GUI Widgets
         ImGui::Begin("Scene Properties");
