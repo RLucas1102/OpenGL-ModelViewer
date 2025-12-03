@@ -158,8 +158,10 @@ class Scene
             _sCamera->view = glm::lookAt(_sCamera->position, glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
         }
 
+        void SetCameraView(const glm::mat4& viewMat) { _sCamera->view = viewMat; }
+
         void SetCameraProj(float fov) {
-            _sCamera->projection = glm::perspective(glm::radians(fov), 800.0f/800.0f, 0.1f, 100.0f);
+            _sCamera->projection = glm::perspective(glm::radians(fov), 1000.0f/1000.0f, 0.1f, 100.0f);
         }
 
         void LoadMVPUniforms() {
