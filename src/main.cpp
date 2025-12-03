@@ -148,6 +148,10 @@ int main() {
     myScene->SetDirLightDiffuse(dirLightDif);
     myScene->SetDirLightSpecular(dirLightSpc);
 
+    // Toon properties
+    int toonLevels = 4;
+    myScene->SetObjectToonLevels(toonLevels);
+
     // Colors
     glm::vec3 skyblue(135.0f, 206.0f, 235.0f);
     skyblue =  1/255.0f * skyblue;
@@ -171,6 +175,8 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
 
         // GUI Widgets
         ImGui::Begin("Scene Properties");
@@ -201,6 +207,21 @@ int main() {
             myScene->SetShader(shaders[item_current]);
             myScene->SetupUniforms();
         }
+
+        float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
+        ImGui::Text("Toon Levels:");
+        ImGui::SameLine();
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            toonLevels--; 
+            myScene->SetObjectToonLevels(toonLevels);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            toonLevels++;
+            myScene->SetObjectToonLevels(toonLevels); 
+        }
+        ImGui::SameLine();
+        ImGui::Text("%d", toonLevels);
 
         ImGui::End();
 
