@@ -109,6 +109,9 @@ int main() {
 
     myScene->SetupUniforms();
 
+    float scale = 1.0f;
+    myScene->SetScaleMat(glm::mat4(scale));
+
     // Object setup
     float color[] = {0.5f, 0.5f, 0.5f};
     float* shininess = new float(32.0f);
@@ -153,6 +156,10 @@ int main() {
     int toonLevels = 4;
     myScene->SetObjectToonLevels(toonLevels);
 
+    // Ben day properties
+    int dotTiling = 50;
+    myScene->SetObjectDotTiling(dotTiling);
+
     // Colors
     glm::vec3 skyblue(135.0f, 206.0f, 235.0f);
     skyblue =  1/255.0f * skyblue;
@@ -176,6 +183,8 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+
+        ImGui::ShowDemoWindow();
 
         // GUI Widgets
         ImGui::Begin("Scene Properties");
@@ -208,7 +217,9 @@ int main() {
         }
 
         float spacing = ImGui::GetStyle().ItemInnerSpacing.x;
-        ImGui::Text("Toon Levels:");
+
+        ImGui::PushID(0);
+        ImGui::Text("Toon Levels");
         ImGui::SameLine();
         if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
             toonLevels--; 
@@ -221,6 +232,29 @@ int main() {
         }
         ImGui::SameLine();
         ImGui::Text("%d", toonLevels);
+        ImGui::PopID();
+
+        ImGui::PushID(1);
+        ImGui::Text("Tiling");
+        ImGui::SameLine();
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            dotTiling--;
+            myScene->SetObjectDotTiling(dotTiling);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            dotTiling++;
+            myScene->SetObjectDotTiling(dotTiling);
+        }
+        ImGui::SameLine();
+        ImGui::Text("%d", dotTiling);
+        ImGui::PopID();
+        
+        if(ImGui::SliderFloat("Scale", &scale, 0.0001f, 10.0)) {
+            glm::mat4 scaleMat = glm::mat4(1.0f);
+            scaleMat = glm::scale(scaleMat, glm::vec3(scale));
+            myScene->SetScaleMat(scaleMat);
+        }
 
         ImGui::End();
 
@@ -315,7 +349,7 @@ void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 void handle_input()
 {
     if (rotateX) {
-        view = glm::rotate(view, glm::radians(1.0f), rotationAxis);
+        view = glm::rotate(view, 10.0f * glm::radians(1.0f), rotationAxis);
     }
     else if(rotateY) {
         view = glm::rotate(view, glm::radians(1.0f), rotationAxis);
