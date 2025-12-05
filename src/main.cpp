@@ -99,6 +99,8 @@ int main() {
 
     float scale = 1.0f;
     float rotationSpeed = 1.0f;
+    float translationSpeed = 1.0f;
+    myScene->SetTranslationMat(glm::mat4(1.0f));
     myScene->SetScaleMat(glm::mat4(scale));
     myScene->SetRotationMat(glm::mat4(1.0f));
 
@@ -124,7 +126,9 @@ int main() {
 
     // Light Setup
     // Point light properties
-    glm::vec3 lightPos = glm::vec3(0, 0, -0.5);
+    float lightPosArr[] = {0.0, 0.0, 1.0};
+
+    glm::vec3 lightPos = glm::vec3(0, 0, 1.0);
     glm::vec3 plightAmbient = glm::vec3(0.1f, 0.1f, 0.1f);
     glm::vec3 plightDiffuse = glm::vec3(1.0f, 1.0f, 1.0f);
     glm::vec3 plightSpecular = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -181,8 +185,6 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        ImGui::ShowDemoWindow();
-
         // GUI Widgets
         ImGui::Begin("Scene Properties");
 
@@ -196,6 +198,9 @@ int main() {
         if (ImGui::FileDialog(&fileDialogOpen, &fileDialogInfo)) {
             // Result path in: m_fileDialogInfo.resultPath
             std::filesystem::path filePath = fileDialogInfo.resultPath;
+            myScene->SetScaleMat(glm::mat4(1.0f));
+            myScene->SetRotationMat(glm::mat4(1.0f));
+            myScene->SetTranslationMat(glm::mat4(1.0f));
             myScene->SetObject(filePath.string().c_str());
         }
         
@@ -262,13 +267,13 @@ int main() {
         if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
             glm::mat4 rotMatrix = glm::mat4(1.0f);
             rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
-            myScene->SetRotationMat(rotMatrix);
+            myScene->UpdateRotationMat(rotMatrix);
         }
         ImGui::SameLine(0.0f, spacing);
         if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
             glm::mat4 rotMatrix = glm::mat4(1.0f);
             rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-            myScene->SetRotationMat(rotMatrix);
+            myScene->UpdateRotationMat(rotMatrix);
         }
         ImGui::PopItemFlag();
         ImGui::PopID();
@@ -280,18 +285,76 @@ int main() {
         if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
             glm::mat4 rotMatrix = glm::mat4(1.0f);
             rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
-            myScene->SetRotationMat(rotMatrix);
+            myScene->UpdateRotationMat(rotMatrix);
         }
         ImGui::SameLine(0.0f, spacing);
         if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
             glm::mat4 rotMatrix = glm::mat4(1.0f);
             rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-            myScene->SetRotationMat(rotMatrix);
+            myScene->UpdateRotationMat(rotMatrix);
+        }
+        ImGui::PopItemFlag();
+        ImGui::PopID();
+        
+        if(ImGui::SliderFloat("Translation Speed", &translationSpeed, 1.0f, 10.0f)) {}
+        
+        ImGui::PushID(4);
+        ImGui::Text("Translation X");
+        ImGui::SameLine();
+        ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            glm::mat4 transMatrix = glm::mat4(1.0f);
+            transMatrix = glm::translate(transMatrix, translationSpeed * glm::vec3(-0.1f, 0.0f, 0.0f));
+            myScene->UpdateTranslationMat(transMatrix);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            glm::mat4 transMatrix = glm::mat4(1.0f);
+            transMatrix = glm::translate(transMatrix, translationSpeed * glm::vec3(0.1f, 0.0f, 0.0f));
+            myScene->UpdateTranslationMat(transMatrix);
         }
         ImGui::PopItemFlag();
         ImGui::PopID();
 
-        
+        ImGui::PushID(5);
+        ImGui::Text("Translation Y");
+        ImGui::SameLine();
+        ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            glm::mat4 transMatrix = glm::mat4(1.0f);
+            transMatrix = glm::translate(transMatrix, translationSpeed * glm::vec3(0.0f, -0.1f, 0.0f));
+            myScene->UpdateTranslationMat(transMatrix);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            glm::mat4 transMatrix = glm::mat4(1.0f);
+            transMatrix = glm::translate(transMatrix, translationSpeed * glm::vec3(0.0f, 0.1f, 0.0f));
+            myScene->UpdateTranslationMat(transMatrix);
+        }
+        ImGui::PopItemFlag();
+        ImGui::PopID();
+
+        ImGui::Text("Light Position");
+        ImGui::PushItemWidth(100);
+        ImGui::PushID(6);
+        if(ImGui::DragFloat("X", &lightPos[0], 0.005f)) {
+            lightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
+            myScene->SetPLightPosition(lightPos);
+        }
+        ImGui::PopID();
+        ImGui::PushID(7);
+        if(ImGui::DragFloat("Y", &lightPos[1], 0.005f)) {
+            lightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
+            myScene->SetPLightPosition(lightPos);
+        }
+        ImGui::PopID();
+        ImGui::PushID(8);
+        if(ImGui::DragFloat("Z", &lightPos[2], 0.005f)) {
+            lightPos = glm::vec3(lightPos[0], lightPos[1], lightPos[2]);
+            myScene->SetPLightPosition(lightPos);
+        }
+        ImGui::PopID();
+        ImGui::PopItemWidth();
 
         ImGui::End();
 
