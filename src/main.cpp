@@ -19,18 +19,6 @@
 void error_callback(int error, const char* description);
 static void key_callback(GLFWwindow* MyWindow, int key, int scancode, int action, int mods); // Make local to this file
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void handle_input();
-
-glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
-glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 focus = glm::vec3(0.0f, 0.0f, 0.0f);
-glm::mat4 view = glm::lookAt(position, focus, up);
-
-glm::vec3 rotationAxis;
-float angle = 1.0f;
-
-bool rotateX = false;
-bool rotateY = false;
 
 int main() {
 
@@ -110,7 +98,9 @@ int main() {
     myScene->SetupUniforms();
 
     float scale = 1.0f;
+    float rotationSpeed = 1.0f;
     myScene->SetScaleMat(glm::mat4(scale));
+    myScene->SetRotationMat(glm::mat4(1.0f));
 
     // Object setup
     float color[] = {0.5f, 0.5f, 0.5f};
@@ -123,6 +113,13 @@ int main() {
 
     // Camera Setup
     float fov = 60.0f;
+
+    glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+    glm::vec3 position = glm::vec3(0.0f, 0.0f, 3.0f);
+    glm::vec3 focus = glm::vec3(0.0f, 0.0f, 0.0f);
+    glm::mat4 view = glm::lookAt(position, focus, up);
+
+    myScene->SetCameraView(view);
     myScene->SetCameraProj(fov);
 
     // Light Setup
@@ -250,22 +247,60 @@ int main() {
         ImGui::Text("%d", dotTiling);
         ImGui::PopID();
         
-        if(ImGui::SliderFloat("Scale", &scale, 0.0001f, 10.0)) {
+        if(ImGui::SliderFloat("Scale", &scale, 0.0001f, 10.0f)) {
             glm::mat4 scaleMat = glm::mat4(1.0f);
             scaleMat = glm::scale(scaleMat, glm::vec3(scale));
             myScene->SetScaleMat(scaleMat);
         }
 
+        if(ImGui::SliderFloat("Rotation Speed", &rotationSpeed, 1.0f, 10.0f)) {}
+        
+        ImGui::PushID(2);
+        ImGui::Text("Rotation X");
+        ImGui::SameLine();
+        ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            glm::mat4 rotMatrix = glm::mat4(1.0f);
+            rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(-1.0f, 0.0f, 0.0f));
+            myScene->SetRotationMat(rotMatrix);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            glm::mat4 rotMatrix = glm::mat4(1.0f);
+            rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+            myScene->SetRotationMat(rotMatrix);
+        }
+        ImGui::PopItemFlag();
+        ImGui::PopID();
+
+        ImGui::PushID(3);
+        ImGui::Text("Rotation Y");
+        ImGui::SameLine();
+        ImGui::PushItemFlag(ImGuiItemFlags_ButtonRepeat, true);
+        if(ImGui::ArrowButton("##left", ImGuiDir_Left)) { 
+            glm::mat4 rotMatrix = glm::mat4(1.0f);
+            rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(0.0f, -1.0f, 0.0f));
+            myScene->SetRotationMat(rotMatrix);
+        }
+        ImGui::SameLine(0.0f, spacing);
+        if(ImGui::ArrowButton("##right", ImGuiDir_Right)) { 
+            glm::mat4 rotMatrix = glm::mat4(1.0f);
+            rotMatrix = glm::rotate(rotMatrix, rotationSpeed * glm::radians(1.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+            myScene->SetRotationMat(rotMatrix);
+        }
+        ImGui::PopItemFlag();
+        ImGui::PopID();
+
+        
+
         ImGui::End();
 
-        myScene->SetCameraView(view);
         myScene->Render();
 
         ImGui::Render();
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     
         glfwSwapBuffers(window); // Swap front and back buffer
-        handle_input();
 
     }
 
@@ -299,42 +334,6 @@ void key_callback(GLFWwindow *MyWindow, int key, int scancode, int action, int m
     if(key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
         glfwSetWindowShouldClose(MyWindow, true);
     }
-    else if(key == GLFW_KEY_RIGHT) {
-        if(action == GLFW_PRESS) {
-            rotateY = true;
-            rotationAxis = glm::vec3(0.0f, 1.0f, 0.0f);
-        }
-        else if (action == GLFW_RELEASE) {
-            rotateY = false;
-        }
-    }
-    else if (key == GLFW_KEY_LEFT) {
-        if (action == GLFW_PRESS) {
-            rotateY = true;
-            rotationAxis = glm::vec3(0.0f, -1.0f, 0.0f);
-        }
-        else if (action == GLFW_RELEASE) {
-            rotateY = false;
-        }
-    }
-    else if (key == GLFW_KEY_UP) {
-        if (action == GLFW_PRESS) {
-            rotateX = true;
-            rotationAxis = glm::vec3(1.0f, 0.0f, 0.0f);
-        }
-        else if (action == GLFW_RELEASE) {
-            rotateX = false;
-        }
-    }
-    else if (key == GLFW_KEY_DOWN) {
-        if (action == GLFW_PRESS) {
-            rotateX = true;
-            rotationAxis = glm::vec3(-1.0f, 0.0f, 0.0f);
-        }
-        else if (action == GLFW_RELEASE) {
-            rotateX = false;
-        }
-    }
 
 }
 
@@ -344,15 +343,4 @@ void key_callback(GLFWwindow *MyWindow, int key, int scancode, int action, int m
 void framebuffer_size_callback(GLFWwindow *window, int width, int height)
 {
     glViewport(0, 0, 1000, 1000);
-}
-
-void handle_input()
-{
-    if (rotateX) {
-        view = glm::rotate(view, 10.0f * glm::radians(1.0f), rotationAxis);
-    }
-    else if(rotateY) {
-        view = glm::rotate(view, glm::radians(1.0f), rotationAxis);
-    }
-
 }
