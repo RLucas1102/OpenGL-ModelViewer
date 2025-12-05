@@ -16,6 +16,7 @@ struct ObjectMaterial {
     glm::vec3 specular;
     float shininess;
     int toonLevels;
+    int dotTiling;
 
 };
 
@@ -61,6 +62,7 @@ class Scene
         Camera* _sCamera;
         ObjectMaterial* _sMaterial;
         glm::mat4 _sModelMat;
+        glm::mat4 _scaleMat;
 
     public:
         Scene() {
@@ -109,7 +111,7 @@ class Scene
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _materialUBO);
-            glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 1 * sizeof(int), NULL, GL_STATIC_DRAW);
+            glBufferData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 2 * sizeof(int), NULL, GL_STATIC_DRAW);
 
             glBindBuffer(GL_UNIFORM_BUFFER, _dirLightUBO);
             glBufferData(GL_UNIFORM_BUFFER, 4 * sizeof(glm::vec4), NULL, GL_STATIC_DRAW);
@@ -118,7 +120,7 @@ class Scene
             // Bind all of the uniform buffer objects to binding points
             glBindBufferRange(GL_UNIFORM_BUFFER, 0, _mvpUBO,         0, 3 * sizeof(glm::mat4));
             glBindBufferRange(GL_UNIFORM_BUFFER, 1, _pointLightUBO,  0, 4 * sizeof(glm::vec4) + 3 * sizeof(float));
-            glBindBufferRange(GL_UNIFORM_BUFFER, 2, _materialUBO,    0, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 1 * sizeof(int));
+            glBindBufferRange(GL_UNIFORM_BUFFER, 2, _materialUBO,    0, 2 * sizeof(glm::vec4) + 1 * sizeof(float) + 2 * sizeof(int));
             glBindBufferRange(GL_UNIFORM_BUFFER, 3, _dirLightUBO,    0, 4 * sizeof(glm::vec4));
 
         }
@@ -145,7 +147,7 @@ class Scene
             _sPLight->quadratic = quadratic;
         }
 
-        void SetModelMat(const glm::mat4& modelMat) {_sModelMat = modelMat; }
+        void SetScaleMat(const glm::mat4& matrix) { _scaleMat = matrix; }
 
         void SetObjectColor(const glm::vec3 diffuse) {_sMaterial->diffuse = diffuse; }
 
@@ -154,6 +156,8 @@ class Scene
         void SetObjectShine(float* shininess) {_sMaterial->shininess = *shininess; }
 
         void SetObjectToonLevels(int toonLevels) { _sMaterial->toonLevels = toonLevels; }
+    
+        void SetObjectDotTiling(int dotTiling) { _sMaterial->dotTiling = dotTiling; }
 
         void SetCameraPos(const glm::vec3& position) { 
             _sCamera->position = position;
@@ -165,6 +169,11 @@ class Scene
 
         void SetCameraProj(float fov) {
             _sCamera->projection = glm::perspective(glm::radians(fov), 1000.0f/1000.0f, 0.1f, 100.0f);
+        }
+
+        void UpdateModelMat() { 
+            _sModelMat = glm::mat4(1.0f);
+            _sModelMat *= _scaleMat; 
         }
 
         void LoadMVPUniforms() {
@@ -203,6 +212,7 @@ class Scene
             glBufferSubData(GL_UNIFORM_BUFFER, 1 * sizeof(glm::vec4), sizeof(glm::vec4), glm::value_ptr(_sMaterial->specular)); 
             glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4), sizeof(float), &_sMaterial->shininess); 
             glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + sizeof(float), sizeof(int), &_sMaterial->toonLevels);
+            glBufferSubData(GL_UNIFORM_BUFFER, 2 * sizeof(glm::vec4) + sizeof(float) + sizeof(int), sizeof(int), &_sMaterial->dotTiling);
             glBindBuffer(GL_UNIFORM_BUFFER, 0);
         }
 
@@ -215,6 +225,8 @@ class Scene
             LoadMaterialUniforms();
 
             _sceneShader->use();
+
+            UpdateModelMat();
 
             _sceneObject->Draw();
             
