@@ -5,6 +5,7 @@ layout (std140) uniform Material {
     vec4 specularIn;
     float shininessIn;
     int toonLevels;
+    int dotTiling;
 };
 
 out vec4 fragColor;
@@ -23,10 +24,10 @@ void main() {
     vec3 color;
     vec3 norm = normalize(normal);
 
-    intensity = dot(vec3(0.0f, 1.0f, 1.0f), norm);
+    intensity = dot(vec3(0.0f, -1.0f, 1.0f), norm);
 
     vec3 st = fragPos;
-    st = tile(st, 30.0);
+    st = tile(st, dotTiling);
 
     color = vec3(1.0f - circle(st, min(max(1.0 - intensity, 0.1), 0.9)));
     fragColor = vec4(color, 1.0f);
