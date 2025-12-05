@@ -62,6 +62,7 @@ class Scene
         Camera* _sCamera;
         ObjectMaterial* _sMaterial;
         glm::mat4 _sModelMat;
+        glm::mat4 _transMat;
         glm::mat4 _scaleMat;
         glm::mat4 _rotationMat;
 
@@ -75,6 +76,7 @@ class Scene
             _sCamera        = new Camera;
             _sMaterial      = new ObjectMaterial;
             _sModelMat      = glm::mat4(1.0f);
+            _transMat       = glm::mat4(1.0f);
             _scaleMat       = glm::mat4(1.0f);
             _rotationMat    = glm::mat4(1.0f);
 
@@ -152,7 +154,13 @@ class Scene
 
         void SetScaleMat(const glm::mat4& matrix) { _scaleMat = matrix; }
 
-        void SetRotationMat(const glm::mat4& matrix) { _rotationMat *= matrix; }
+        void SetRotationMat(const glm::mat4& matrix) { _rotationMat = matrix; }
+
+        void SetTranslationMat(const glm::mat4& matrix) { _transMat = matrix; }
+
+        void UpdateRotationMat(const glm::mat4& matrix) { _rotationMat *= matrix; }
+
+        void UpdateTranslationMat(const glm::mat4& matrix) { _transMat *= matrix; }
 
         void SetObjectColor(const glm::vec3 diffuse) {_sMaterial->diffuse = diffuse; }
 
@@ -178,6 +186,7 @@ class Scene
 
         void UpdateModelMat() { 
             _sModelMat = glm::mat4(1.0f);
+            _sModelMat *= _transMat;
             _sModelMat *= _rotationMat;
             _sModelMat *= _scaleMat; 
         }
