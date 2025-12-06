@@ -3,10 +3,10 @@
 /testFiles
 
 # objFiles
-/obj
+/obj/*.o
 
 # binFiles
-/bin
+/bin/*.out
 
 # GUI Property Saves
 imgui.ini
